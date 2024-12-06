@@ -1,0 +1,58 @@
+name: Azure Storage Account Provisioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      sa_name:
+        description: 'Storage Account Name'
+        required: true
+      sa_location:
+        description: 'Azure Location'
+        required: true
+      sa_account_tier:
+        description: 'Account Tier'
+        required: true
+      sa_account_replication_type:
+        description: 'Replication Type'
+        required: true
+      sa_rgname:
+        description: 'Resource Group Name'
+        required: true
+      action:
+        description: 'Terraform Action'
+        required: true
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Azure
+        run: az login --use-device-code --tenant "0d1e47cc-960b-4576-82cc-e3e94f5e83bf"
+
+      - name: Set Azure Subscription
+        run: az account set --subscription "511235a9-1907-41f1-b32f-27948e2a86be"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
+
+      - name: Initialize Terraform
+        run: terraform init #-backend-config="key=$(terraform output -raw tfstate_file_name)"
+      - name: Debug Input1
+        run: echo "${{ inputs.action }}"
+     # - name: Debug Input2
+     #   run: echo "${{ github.event.inputs.action }}"
+
+      - name: Run Terraform
+        run: |
+          terraform ${{ inputs.action }} -auto-approve \
+          -var="sa_name=${{ github.event.inputs.sa_name }}" \
+          -var="sa_rgname=${{ github.event.inputs.sa_rgname }}" \
+          -var="sa_location=${{ github.event.inputs.sa_location }}" \
+          -var="sa_account_tier=${{ github.event.inputs.sa_account_tier }}" \
+          -var="sa_account_replication_type=${{ github.event.inputs.sa_account_replication_type }}"
