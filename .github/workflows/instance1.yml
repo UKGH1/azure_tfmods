@@ -15,9 +15,9 @@ on:
       sa_account_replication_type:
         description: 'Replication Type'
         required: true
-      sa_rgname:
-        description: 'Resource Group Name'
-        required: true
+      #sa_rgname:
+        #description: 'Resource Group Name'
+        #required: true
       action:
         description: 'Terraform Action'
         required: true
