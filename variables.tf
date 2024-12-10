@@ -5,6 +5,7 @@ variable "sa_name" {
 variable "sa_rgname" {
   type        = string
   description = "The name of the resource group in which to create the storage account. Changing this forces a new resource to be created."
+  default     = "rg-fsapps-backstage"
 }
 variable "sa_location" {
   type        = string
