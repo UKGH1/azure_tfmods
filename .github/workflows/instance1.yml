@@ -27,26 +27,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Authenticate to Azure
-        run: az login --use-device-code --tenant "0d1e47cc-960b-4576-82cc-e3e94f5e83bf"
+      # Set Azure Service Principal credentials as environment variables
+      - name: Set Azure Service Principal Environment Variables
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: echo "Azure credentials set"
 
-      - name: Set Azure Subscription
-        run: az account set --subscription "511235a9-1907-41f1-b32f-27948e2a86be"
-
+      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.7
 
+      # Initialize Terraform
       - name: Initialize Terraform
-        run: terraform init #-backend-config="key=$(terraform output -raw tfstate_file_name)"
+        run: terraform init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          
       - name: Debug Input1
         run: echo "${{ inputs.action }}"
-     # - name: Debug Input2
-     #   run: echo "${{ github.event.inputs.action }}"
 
       - name: Run Terraform
         run: |
@@ -55,5 +65,10 @@ jobs:
           -var="sa_location=${{ github.event.inputs.sa_location }}" \
           -var="sa_account_tier=${{ github.event.inputs.sa_account_tier }}" \
           -var="sa_account_replication_type=${{ github.event.inputs.sa_account_replication_type }}"
-
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          
 # -var="sa_rgname=${{ github.event.inputs.sa_rgname }}" #Default value is set in the variables.tf
